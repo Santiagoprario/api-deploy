@@ -65,7 +65,29 @@ server.get('/v1/location' , async (req, res) => {
     })  
 
 server.get('/v1/current' , async (req, res) => {
-     try {
+    let ip = req.ip
+    try {
+      if (ip !== '::1') {
+        const response = await axios.get(`http://ip-api.com/json/${ip}?fields=status,message,country,city,query`)
+        .then((res) => {
+          city = res.data.city;
+             return city;
+        })
+        .then((city) => {
+          const resp = axios.get(`http://api.weatherapi.com/v1/forecast.json?q=${city}&hour=12&days=5&lang=es&key=${MY_API_KEY}`)
+          return resp
+        })
+        .then((response) => {
+          let current = {
+            location : response.data.location,
+            current : response.data.current
+            }
+          return res.json(current)
+        })
+        .catch((err) => {
+          return res.json(err)
+        })
+      } 
        await getIP ((err, ip) => {
            axios.get(`http://ip-api.com/json/${ip}?fields=status,message,country,city,query`)
            .then((res) => {
@@ -81,10 +103,10 @@ server.get('/v1/current' , async (req, res) => {
                location : response.data.location,
                current : response.data.current
                }
-             res.json(current) 
+             return res.json(current) 
            })
            .catch((err) => {
-             console.error(err)
+             return res.json(err)
            })
        })
       }
@@ -111,7 +133,29 @@ server.get('/v1/current/:city' , async (req,res) => {
 })
 
 server.get('/v1/forecast' , async (req, res) => {
+  let ip = req.ip
   try {
+    if (ip !== '::1') {
+      const response = await axios.get(`http://ip-api.com/json/${ip}?fields=status,message,country,city,query`)
+      .then((res) => {
+        city = res.data.city;
+           return city;
+      })
+      .then((city) => {
+        const resp = axios.get(`http://api.weatherapi.com/v1/forecast.json?q=${city}&hour=12&days=5&lang=es&key=${MY_API_KEY}`)
+        return resp
+      })
+      .then((response) => {
+        let current = {
+          location : response.data.location,
+          current : response.data.current
+          }
+        return res.json(current)
+      })
+      .catch((err) => {
+        return res.json(err)
+      })
+    } 
     await getIP ((err, ip) => {
       axios.get(`http://ip-api.com/json/${ip}?fields=status,message,country,city,query`)
       .then((res) => {
